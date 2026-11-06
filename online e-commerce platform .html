@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Admin Pro (INR + Features)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#eff6ff', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-gray-100 font-sans transition-colors duration-200">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-slate-900 text-white flex flex-col justify-between hidden md:flex border-r border-slate-800">
+            <div>
+                <div class="h-16 flex items-center px-6 bg-slate-950 font-bold text-lg tracking-wider gap-3">
+                    <div class="p-2 bg-blue-600 rounded-lg text-white">
+                        <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                    </div>
+                    <span>StoreAdmin IN</span>
+                </div>
+
+                <nav class="mt-6 px-4 space-y-1">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium bg-blue-600 text-white transition shadow-lg shadow-blue-600/20">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+                    </button>
+                    <button onclick="switchTab('products')" id="nav-products" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition">
+                        <i data-lucide="package" class="w-4 h-4"></i> Products
+                    </button>
+                    <button onclick="switchTab('orders')" id="nav-orders" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i> Orders
+                    </button>
+                    <button onclick="switchTab('customers')" id="nav-customers" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition">
+                        <i data-lucide="users" class="w-4 h-4"></i> Customers
+                    </button>
+                </nav>
+            </div>
+
+            <div class="p-4 border-t border-slate-800 space-y-3">
+                <button onclick="exportToCSV()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition">
+                    <i data-lucide="download" class="w-4 h-4"></i> Export CSV Report
+                </button>
+                <div class="flex items-center gap-3 px-3 py-2 bg-slate-800/50 rounded-xl">
+                    <div class="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center font-bold text-sm text-white">IN</div>
+                    <div class="overflow-hidden">
+                        <p class="text-sm font-medium truncate">Store Manager</p>
+                        <p class="text-xs text-slate-400 truncate">admin@store.in</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Wrapper -->
+        <div class="flex-1 flex flex-col overflow-y-auto">
+            
+            <!-- Top Navbar -->
+            <header class="h-16 bg-white dark:bg-slate-800 border-b dark:border-slate-700 flex items-center justify-between px-6 sticky top-0 z-20 shadow-xs">
+                <div class="flex items-center gap-4 w-1/3">
+                    <div class="relative w-full max-w-md">
+                        <i data-lucide="search" class="absolute left-3 top-3 w-4 h-4 text-gray-400"></i>
+                        <input type="text" id="globalSearch" onkeyup="filterTables()" placeholder="Search products or orders..." class="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-slate-700 border dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white">
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleTheme()" class="p-2.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition">
+                        <i data-lucide="sun" id="themeIconSun" class="w-5 h-5 hidden dark:block"></i>
+                        <i data-lucide="moon" id="themeIconMoon" class="w-5 h-5 block dark:hidden"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="p-6 md:p-8 space-y-6">
+                
+                <!-- TAB 1: DASHBOARD -->
+                <section id="tab-dashboard" class="space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h1 class="text-2xl font-bold tracking-tight">Dashboard Overview</h1>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Real-time performance metrics in Indian Rupee (INR).</p>
+                        </div>
+                        <button onclick="openModal('productModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 shadow-lg shadow-blue-600/20 transition">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Add New Product
+                        </button>
+                    </div>
+
+                    <!-- Metrics Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border dark:border-slate-700 shadow-xs flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Revenue</p>
+                                <h3 class="text-2xl font-bold mt-1">₹3,48,290</h3>
+                                <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-md mt-2 inline-block">+14.2% this month</span>
+                            </div>
+                            <div class="p-4 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-2xl">
+                                <i data-lucide="indian-rupee" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border dark:border-slate-700 shadow-xs flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Orders</p>
+                                <h3 class="text-2xl font-bold mt-1">1,482</h3>
+                                <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-md mt-2 inline-block">+8.1% vs last week</span>
+                            </div>
+                            <div class="p-4 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-2xl">
+                                <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border dark:border-slate-700 shadow-xs flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Active Products</p>
+                                <h3 class="text-2xl font-bold mt-1">384</h3>
+                                <span class="text-xs font-semibold text-amber-600 bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 rounded-md mt-2 inline-block">5 low stock alerts</span>
+                            </div>
+                            <div class="p-4 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-2xl">
+                                <i data-lucide="package" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border dark:border-slate-700 shadow-xs flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Customers</p>
+                                <h3 class="text-2xl font-bold mt-1">9,240</h3>
+                                <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-md mt-2 inline-block">+180 new today</span>
+                            </div>
+                            <div class="p-4 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-2xl">
+                                <i data-lucide="users" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Section -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border dark:border-slate-700 shadow-xs lg:col-span-2">
+                            <h3 class="font-bold text-lg mb-4">Revenue Growth (₹)</h3>
+                            <div class="h-72">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border dark:border-slate-700 shadow-xs flex flex-col justify-between">
+                            <h3 class="font-bold text-lg mb-4">Sales by Category</h3>
+                            <div class="h-60 flex justify-center items-center">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 2: PRODUCTS -->
+                <section id="tab-products" class="space-y-6 hidden">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h1 class="text-2xl font-bold tracking-tight">Product Inventory</h1>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Manage stock, prices in INR, and catalog listings.</p>
+                        </div>
+                        <button onclick="openModal('productModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Add Product
+                        </button>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl overflow-hidden shadow-xs">
+                        <table class="w-full text-left border-collapse" id="productsTable">
+                            <thead class="bg-gray-50 dark:bg-slate-700/50 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 border-b dark:border-slate-700">
+                                <tr>
+                                    <th class="p-4">Item Name</th>
+                                    <th class="p-4">Category</th>
+                                    <th class="p-4">Price (₹)</th>
+                                    <th class="p-4">Stock Status</th>
+                                    <th class="p-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y dark:divide-slate-700 text-sm" id="productContainer">
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-slate-700/20">
+                                    <td class="p-4 font-medium flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">WH</div>
+                                        Wireless Headphones
+                                    </td>
+                                    <td class="p-4 text-gray-500 dark:text-gray-400">Electronics</td>
+                                    <td class="p-4 font-semibold">₹2,499.00</td>
+                                    <td class="p-4"><span class="px-2.5 py-1 text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 rounded-lg">In Stock (42)</span></td>
+                                    <td class="p-4 text-right">
+                                        <button onclick="deleteRow(this)" class="text-gray-400 hover:text-red-500 p-1 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-slate-700/20">
+                                    <td class="p-4 font-medium flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">SW</div>
+                                        Smart Fitness Watch
+                                    </td>
+                                    <td class="p-4 text-gray-500 dark:text-gray-400">Wearables</td>
+                                    <td class="p-4 font-semibold">₹1,899.00</td>
+                                    <td class="p-4"><span class="px-2.5 py-1 text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 rounded-lg">Low Stock (3)</span></td>
+                                    <td class="p-4 text-right">
+                                        <button onclick="deleteRow(this)" class="text-gray-400 hover:text-red-500 p-1 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- TAB 3: ORDERS -->
+                <section id="tab-orders" class="space-y-6 hidden">
+                    <div>
+                        <h1 class="text-2xl font-bold tracking-tight">Customer Orders</h1>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Track fulfillment status and update order delivery states.</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl overflow-hidden shadow-xs">
+                        <table class="w-full text-left border-collapse" id="ordersTable">
+                            <thead class="bg-gray-50 dark:bg-slate-700/50 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 border-b dark:border-slate-700">
+                                <tr>
+                                    <th class="p-4">Order ID</th>
+                                    <th class="p-4">Customer</th>
+                                    <th class="p-4">Total Amount (₹)</th>
+                                    <th class="p-4">Fulfillment Status</th>
+                                    <th class="p-4">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y dark:divide-slate-700 text-sm">
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-slate-700/20">
+                                    <td class="p-4 font-medium text-blue-600 dark:text-blue-400 cursor-pointer hover:underline" onclick="showOrderDrawer('#ORD-9081', 'Rahul Sharma', '₹4,999.00', '+91 9876543210')">#ORD-9081</td>
+                                    <td class="p-4">Rahul Sharma</td>
+                                    <td class="p-4 font-semibold">₹4,999.00</td>
+                                    <td class="p-4">
+                                        <select onchange="updateStatus(this)" class="bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 text-xs font-medium border-0 rounded-lg p-1.5 focus:ring-1 focus:ring-blue-500">
+                                            <option value="Processing" selected>Processing</option>
+                                            <option value="Shipped">Shipped</option>
+                                            <option value="Delivered">Delivered</option>
+                                        </select>
+                                    </td>
+                                    <td class="p-4 text-gray-500 dark:text-gray-400">Today, 2:45 PM</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- TAB 4: CUSTOMERS -->
+                <section id="tab-customers" class="space-y-6 hidden">
+                    <div>
+                        <h1 class="text-2xl font-bold tracking-tight">Customer Profiles</h1>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Directory of registered user accounts and spending habits.</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl overflow-hidden shadow-xs">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-gray-50 dark:bg-slate-700/50 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 border-b dark:border-slate-700">
+                                <tr>
+                                    <th class="p-4">Customer Name</th>
+                                    <th class="p-4">Email / Mobile (+91)</th>
+                                    <th class="p-4">Orders Placed</th>
+                                    <th class="p-4">Lifetime Spend (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y dark:divide-slate-700 text-sm">
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-slate-700/20">
+                                    <td class="p-4 font-medium">Rahul Sharma</td>
+                                    <td class="p-4 text-gray-500 dark:text-gray-400">+91 9876543210</td>
+                                    <td class="p-4">8 Orders</td>
+                                    <td class="p-4 font-semibold text-emerald-600">₹28,900.00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal Form (Add Product with Phone Verification) -->
+    <div id="productModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-6 space-y-5 border dark:border-slate-700 shadow-2xl">
+            <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3">
+                <h3 class="font-bold text-lg">Add New Product</h3>
+                <button onclick="closeModal('productModal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form class="space-y-4" onsubmit="addNewProduct(event)">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Product Title</label>
+                    <input type="text" id="prodTitle" required class="w-full bg-gray-50 dark:bg-slate-700 border dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none dark:text-white" placeholder="e.g. Mechanical Keyboard">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Supplier Contact (+91 Phone Number)</label>
+                    <input type="tel" id="supplierPhone" pattern="[6-9][0-9]{9}" required class="w-full bg-gray-50 dark:bg-slate-700 border dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none dark:text-white" placeholder="10-digit Indian Mobile No.">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Category</label>
+                    <select id="prodCategory" class="w-full bg-gray-50 dark:bg-slate-700 border dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none dark:text-white">
+                        <option>Electronics</option>
+                        <option>Wearables</option>
+                        <option>Home & Kitchen</option>
+                        <option>Apparel</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Price (₹)</label>
+                        <input type="number" id="prodPrice" step="0.01" required class="w-full bg-gray-50 dark:bg-slate-700 border dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none dark:text-white" placeholder="1499.00">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Stock Count</label>
+                        <input type="number" id="prodStock" required class="w-full bg-gray-50 dark:bg-slate-700 border dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none dark:text-white" placeholder="15">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t dark:border-slate-700">
+                    <button type="button" onclick="closeModal('productModal')" class="px-4 py-2.5 border dark:border-slate-600 text-sm font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition">Cancel</button>
+                    <button type="submit" class="px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script Section -->
+    <script>
+        lucide.createIcons();
+
+        function switchTab(tabId) {
+            ['dashboard', 'products', 'orders', 'customers'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`nav-${t}`).className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition";
+            });
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`nav-${tabId}`).className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium bg-blue-600 text-white transition shadow-lg shadow-blue-600/20";
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+            document.getElementById(id).classList.add('flex');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+            document.getElementById(id).classList.remove('flex');
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        // Feature 1: Indian Mobile (+91) Verified Product Add
+        function addNewProduct(e) {
+            e.preventDefault();
+            const title = document.getElementById('prodTitle').value;
+            const category = document.getElementById('prodCategory').value;
+            const price = parseFloat(document.getElementById('prodPrice').value).toFixed(2);
+            const stock = parseInt(document.getElementById('prodStock').value);
+            
+            const initials = title.substring(0,2).toUpperCase();
+            const badgeClass = stock < 5 ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400';
+            const badgeText = stock < 5 ? `Low Stock (${stock})` : `In Stock (${stock})`;
+
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-gray-50/50 dark:hover:bg-slate-700/20";
+            tr.innerHTML = `
+                <td class="p-4 font-medium flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">${initials}</div>
+                    ${title}
+                </td>
+                <td class="p-4 text-gray-500 dark:text-gray-400">${category}</td>
+                <td class="p-4 font-semibold">₹${price}</td>
+                <td class="p-4"><span class="px-2.5 py-1 text-xs font-medium ${badgeClass} rounded-lg">${badgeText}</span></td>
+                <td class="p-4 text-right">
+                    <button onclick="deleteRow(this)" class="text-gray-400 hover:text-red-500 p-1 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </td>
+            `;
+            document.getElementById('productContainer').appendChild(tr);
+            lucide.createIcons();
+            closeModal('productModal');
+            e.target.reset();
+        }
+
+        // Feature 2: CSV Export Functionality
+        function exportToCSV() {
+            let csv = 'Product Name,Category,Price(INR),Stock Status\n';
+            const rows = document.querySelectorAll('#productContainer tr');
+            rows.forEach(row => {
+                const cols = row.querySelectorAll('td');
+                if(cols.length > 0) {
+                    csv += `"${cols[0].innerText.trim()}","${cols[1].innerText.trim()}","${cols[2].innerText.trim()}","${cols[3].innerText.trim()}"\n`;
+                }
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'ecommerce_inventory.csv');
+            a.click();
+        }
+
+        function deleteRow(btn) {
+            btn.closest('tr').remove();
+        }
+
+        function updateStatus(select) {
+            const val = select.value;
+            if(val === 'Processing') select.className = "bg-blue-50 text-blue-700 text-xs font-medium border-0 rounded-lg p-1.5 focus:ring-1 focus:ring-blue-500";
+            else if(val === 'Shipped') select.className = "bg-purple-50 text-purple-700 text-xs font-medium border-0 rounded-lg p-1.5 focus:ring-1 focus:ring-blue-500";
+            else if(val === 'Delivered') select.className = "bg-emerald-50 text-emerald-700 text-xs font-medium border-0 rounded-lg p-1.5 focus:ring-1 focus:ring-blue-500";
+        }
+
+        function filterTables() {
+            const query = document.getElementById('globalSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        }
+
+        function showOrderDrawer(id, customer, amount, phone) {
+            alert(`Order Details:\n\nID: ${id}\nCustomer: ${customer}\nPhone: ${phone}\nTotal Amount: ${amount}`);
+        }
+
+        window.onload = function() {
+            const ctxRev = document.getElementById('revenueChart').getContext('2d');
+            new Chart(ctxRev, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: [120000, 190000, 160000, 240000, 290000, 348290],
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        fill: true,
+                        tension: 0.35,
+                        borderWidth: 3
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            const ctxCat = document.getElementById('categoryChart').getContext('2d');
+            new Chart(ctxCat, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Electronics', 'Wearables', 'Home & Kitchen', 'Apparel'],
+                    datasets: [{
+                        data: [45, 25, 18, 12],
+                        backgroundColor: ['#2563eb', '#10b981', '#f59e0b', '#8b5cf6']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        };
+    </script>
+</body>
+</html>
